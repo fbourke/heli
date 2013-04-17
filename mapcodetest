@@ -2,7 +2,7 @@ import pygame
 import sys
 from pygame.locals import *
 
-def tile_table(file, width, height):  #example function to load tiles from tileset file
+def tile_table(file, width, height):	#example function to load tiles from tileset file
 	image = pygame.image.load(file).convert()
 	image_width, image_height = image.get_size()
 	print(image_width)
@@ -18,7 +18,7 @@ def tile_table(file, width, height):  #example function to load tiles from tiles
 
 import ConfigParser
 
-class Level(object):
+class Level(object):	#loads the text file defining the map
 	def load_file(self, filename):
 		self.map = []
 		self.key = {}
@@ -42,28 +42,22 @@ class Level(object):
 			return self.key[char]
 		except KeyError:
 			return {}
-	def get_tile(self, x, y):
-		try:
-			char = self.map[y][x]
-		except IndexError:
-			return {}
-		try:
-			return self.key[char]
-		except KeyError:
-			return {}
+
 	def get_bool(self, x, y, name):
 		value = self.get_tile(x,y).get(name)
 		return value in (True, 1, "true", "yes", "True", "Yes", "1", "on", "On")
 
-	def is_wall(self, x, y):
+	def is_wall(self, x, y):	
+		#Is there a wall there?
 		return self.get_bool(x,y, "wall")
 
 	def is_blocking(self, x, y):
+		#Is this space blocking movement?
 		if not 0 <= x < self.width or not 0 <= y < self.height:
 			return True
 		return (self.get_bool(x,y, "block"))
 
-	def render(self):
+	def render(self):	#draws appropriate tiles for each space
 		wall = self.is_wall
 		tiles = MAP_CACHE[self.tileset]
 		image = pygame.Surface((self.width*MAP_TILE_WIDTH, self.height*MAP_TILE_HEIGHT))
@@ -71,7 +65,7 @@ class Level(object):
 		for map_y, line in enumerate(self.map):
 			for map_x, c in enumerate(line):
 				if wall(map_x, map_y):
-                    # Draw different tiles depending on neighbourhood
+                    # Draw different tiles depending on if it is corner, side, etc
 					if not wall(map_x, map_y+1):
 						if wall(map_x+1, map_y) and wall(map_x-1, map_y):
 							tile = 1, 2
@@ -106,23 +100,23 @@ class Level(object):
 						tile = self.key[c]['tile'].split(',')
 						tile = int(tile[0]), int(tile[1])
 					except (ValueError, KeyError):
-                        # Default to ground tile
+                        # Default to ground tile if not one of other types
 						tile = 0, 3
 				tile_image = tiles[tile[0]][tile[1]]
 				image.blit(tile_image,(map_x*MAP_TILE_WIDTH, map_y*MAP_TILE_HEIGHT))
 		return image, overlays
 
-screen = pygame.display.set_mode((256, 256))
+screen = pygame.display.set_mode((256, 256))	#creates pygame window
 
-MAP_TILE_WIDTH = 24
+MAP_TILE_WIDTH = 24			#defining tile width and height
 MAP_TILE_HEIGHT = 24
-MAP_CACHE = {"tilesexample.bmp": tile_table("tilesexample.bmp", MAP_TILE_WIDTH, MAP_TILE_HEIGHT)}
+MAP_CACHE = {"tilesexample.bmp": tile_table("tilesexample.bmp", MAP_TILE_WIDTH, MAP_TILE_HEIGHT)}	#specifies the image file to be used
 level = Level()
-level.load_file("level.map")
+level.load_file("level.map")	#specifies the text file to be used
 
 clock = pygame.time.Clock()
 
-background, overlay_dict = level.render()
+background, overlay_dict = level.render()	#draws the level
 overlays = pygame.sprite.RenderUpdates()
 for (x,y), image in overlay_dict.iteritems():
 	overlay = pygame.sprite.Sprite(overlays)
@@ -135,11 +129,11 @@ pygame.display.flip()
 game_over = False
 while not game_over:
 
-    # XXX draw all the objects here
+    # draw all the objects here
 
 	overlays.draw(screen)
 	pygame.display.flip()
-	clock.tick(15)
+	clock.tick(15)			#draws objects on background and then updates screen
 	for event in pygame.event.get():
 		if event.type == pygame.locals.QUIT:
 			game_over = True
