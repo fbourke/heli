@@ -5,8 +5,6 @@ from pygame.locals import *
 def tile_table(file, width, height):	#example function to load tiles from tileset file
 	image = pygame.image.load(file).convert()
 	image_width, image_height = image.get_size()
-	print(image_width)
-	print(image_height)
 	tile_table = []
 	for x in range(0, int(image_width/width)):
 		line = []
@@ -84,17 +82,6 @@ class Level(object):	#loads the text file defining the map
 							tile = 2, 1
 						else:
 							tile = 3, 1
-                    # Add overlays if the wall may be obscuring something
-					if not wall(map_x, map_y-1):
-						if wall(map_x+1, map_y) and wall(map_x-1, map_y):
-							over = 1, 0
-						elif wall(map_x+1, map_y):
-							over = 0, 0
-						elif wall(map_x-1, map_y):
-							over = 2, 0
-						else:
-							over = 3, 0
-						overlays[(map_x, map_y)] = tiles[over[0]][over[1]]
 				else:
 					try:
 						tile = self.key[c]['tile'].split(',')
@@ -106,11 +93,12 @@ class Level(object):	#loads the text file defining the map
 				image.blit(tile_image,(map_x*MAP_TILE_WIDTH, map_y*MAP_TILE_HEIGHT))
 		return image, overlays
 
-screen = pygame.display.set_mode((256, 256))	#creates pygame window
+screen = pygame.display.set_mode((300, 300))	#creates pygame window
+pygame.display.set_caption("Huge Dicks on Mars")
 
-MAP_TILE_WIDTH = 24			#defining tile width and height
-MAP_TILE_HEIGHT = 24
-MAP_CACHE = {"tilesexample.bmp": tile_table("tilesexample.bmp", MAP_TILE_WIDTH, MAP_TILE_HEIGHT)}	#specifies the image file to be used
+MAP_TILE_WIDTH = 24	#defining tile width and height
+MAP_TILE_HEIGHT = 16
+MAP_CACHE = {"pygametileset.bmp": tile_table("pygametileset.bmp", MAP_TILE_WIDTH, MAP_TILE_HEIGHT)}	#specifies the image file to be used
 level = Level()
 level.load_file("level.map")	#specifies the text file to be used
 
@@ -121,10 +109,10 @@ overlays = pygame.sprite.RenderUpdates()
 for (x,y), image in overlay_dict.iteritems():
 	overlay = pygame.sprite.Sprite(overlays)
 	overlay.image = image
-	overlay.rect = image.get_rect().move(x*2, y*16 - 16)
+	overlay.rect = image.get_rect().move(x*16, y*16 - 16)
 screen.blit(background,(0,0))
 overlays.draw(screen)
-pygame.display.flip()
+pygame.display.flip()	#updates the display surface
 
 game_over = False
 while not game_over:
