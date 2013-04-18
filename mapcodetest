@@ -1,5 +1,6 @@
 import pygame
 import sys
+import pygame.camera
 from pygame.locals import *
 
 def tile_table(file, width, height):	#example function to load tiles from tileset file
@@ -93,11 +94,16 @@ class Level(object):	#loads the text file defining the map
 				image.blit(tile_image,(map_x*MAP_TILE_WIDTH, map_y*MAP_TILE_HEIGHT))
 		return image, overlays
 
-screen = pygame.display.set_mode((300, 300))	#creates pygame window
-pygame.display.set_caption("Huge Dicks on Mars")
-
-MAP_TILE_WIDTH = 24	#defining tile width and height
+window_width = 300
+window_height = 300
+MAP_TILE_WIDTH = 24		#defining tile width and height
 MAP_TILE_HEIGHT = 16
+map_width = MAP_TILE_WIDTH * 31
+map_height = MAP_TILE_HEIGHT * 20	#I'll make this less sketchy later...
+
+screen = pygame.display.set_mode((window_width, window_height))	#creates window
+pygame.display.set_caption("Map Test")
+
 MAP_CACHE = {"pygametileset.bmp": tile_table("pygametileset.bmp", MAP_TILE_WIDTH, MAP_TILE_HEIGHT)}	#specifies the image file to be used
 level = Level()
 level.load_file("level.map")	#specifies the text file to be used
@@ -106,24 +112,52 @@ clock = pygame.time.Clock()
 
 background, overlay_dict = level.render()	#draws the level
 overlays = pygame.sprite.RenderUpdates()
+
 for (x,y), image in overlay_dict.iteritems():
+	totaltiles += 1
+
 	overlay = pygame.sprite.Sprite(overlays)
 	overlay.image = image
 	overlay.rect = image.get_rect().move(x*16, y*16 - 16)
-screen.blit(background,(0,0))
-overlays.draw(screen)
+
+background_x = 0
+background_y = 0
+x_change = -3
+
+screen.blit(background,(background_x, background_y, window_width, window_height))
+#overlays.draw(screen)
 pygame.display.flip()	#updates the display surface
 
 game_over = False
-while not game_over:
+while not game_over:	#This is the main game loop
 
-    # draw all the objects here
+    # We will draw other objects here...
 
-	overlays.draw(screen)
-	pygame.display.flip()
-	clock.tick(15)			#draws objects on background and then updates screen
+	clock.tick(15)			#updates screen based on key movement
 	for event in pygame.event.get():
+		key_pressed = pygame.key.get_pressed()
 		if event.type == pygame.locals.QUIT:
 			game_over = True
-		elif event.type == pygame.locals.KEYDOWN:
-			pressed_key = event.key
+		elif key_pressed[K_LEFT]:
+			background_x -= x_change
+		elif key_pressed[K_RIGHT]:
+			background_x += x_change
+		elif key_pressed[K_UP]:
+			background_y -= x_change
+		elif key_pressed[K_DOWN]:
+			background_y += x_change
+		elif key_pressed[K_ESCAPE]:
+			quit()
+
+		if background_x > 0:
+			background_x = 0
+		if background_x < -(map_width - window_width):
+			background_x = -(map_width - window_width)
+
+		if background_y > 0:
+			background_y = 0
+		if background_y < -(map_height - window_height):
+			background_y = -(map_height - window_height)
+
+	screen.blit(background,(background_x, background_y, window_width, window_height))
+	pygame.display.flip()
