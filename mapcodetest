@@ -94,19 +94,20 @@ class Level(object):	#loads the text file defining the map
 				image.blit(tile_image,(map_x*MAP_TILE_WIDTH, map_y*MAP_TILE_HEIGHT))
 		return image, overlays
 
+level = Level()
+level.load_file("level.map")	#specifies the text file to be used
+
 window_width = 300
 window_height = 300
 MAP_TILE_WIDTH = 24		#defining tile width and height
 MAP_TILE_HEIGHT = 16
-map_width = MAP_TILE_WIDTH * 40
-map_height = MAP_TILE_HEIGHT * 20	#I'll make this less sketchy later...
+map_width = MAP_TILE_WIDTH * level.width
+map_height = MAP_TILE_HEIGHT * level.height
 
 screen = pygame.display.set_mode((window_width, window_height))	#creates window
 pygame.display.set_caption("Map Test")
 
 MAP_CACHE = {"pygametileset.bmp": tile_table("pygametileset.bmp", MAP_TILE_WIDTH, MAP_TILE_HEIGHT)}	#specifies the image file to be used
-level = Level()
-level.load_file("level.map")	#specifies the text file to be used
 
 clock = pygame.time.Clock()
 
