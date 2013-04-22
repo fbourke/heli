@@ -98,7 +98,7 @@ window_width = 300
 window_height = 300
 MAP_TILE_WIDTH = 24		#defining tile width and height
 MAP_TILE_HEIGHT = 16
-map_width = MAP_TILE_WIDTH * 31
+map_width = MAP_TILE_WIDTH * 40
 map_height = MAP_TILE_HEIGHT * 20	#I'll make this less sketchy later...
 
 screen = pygame.display.set_mode((window_width, window_height))	#creates window
@@ -130,34 +130,33 @@ pygame.display.flip()	#updates the display surface
 
 game_over = False
 while not game_over:	#This is the main game loop
-
     # We will draw other objects here...
 
-	clock.tick(15)			#updates screen based on key movement
+	clock.tick(30)			#updates screen 30 times per second
 	for event in pygame.event.get():
 		key_pressed = pygame.key.get_pressed()
-		if event.type == pygame.locals.QUIT:
-			game_over = True
-		elif key_pressed[K_LEFT]:
-			background_x -= x_change
-		elif key_pressed[K_RIGHT]:
-			background_x += x_change
-		elif key_pressed[K_UP]:
-			background_y -= x_change
-		elif key_pressed[K_DOWN]:
-			background_y += x_change
-		elif key_pressed[K_ESCAPE]:
-			quit()
 
-		if background_x > 0:
-			background_x = 0
-		if background_x < -(map_width - window_width):
-			background_x = -(map_width - window_width)
+	if event.type == pygame.locals.QUIT:
+		game_over = True
+	elif key_pressed[K_LEFT]:
+		background_x -= x_change
+	elif key_pressed[K_RIGHT]:
+		background_x += x_change
+	elif key_pressed[K_UP]:
+		background_y -= x_change
+	elif key_pressed[K_DOWN]:
+		background_y += x_change
+	elif key_pressed[K_ESCAPE]:
+		quit()
 
-		if background_y > 0:
-			background_y = 0
-		if background_y < -(map_height - window_height):
-			background_y = -(map_height - window_height)
+	if background_x > 0:
+		background_x = 0
+	if background_x < -(map_width - window_width):
+		background_x = -(map_width - window_width)
+	if background_y > 0:
+		background_y = 0
+	if background_y < -(map_height - window_height):
+		background_y = -(map_height - window_height)
 
 	screen.blit(background,(background_x, background_y, window_width, window_height))
-	pygame.display.flip()
+	pygame.display.flip()	
