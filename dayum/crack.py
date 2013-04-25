@@ -186,10 +186,13 @@ class Shot(pygame.sprite.Sprite):
 
     def update(self):
         self.rect = self.rect.move(self.xspeed,self.yspeed)
-        print('sup')
-        if self.rect.top <= 0:
+        if self.rect.top <= 0 or self.collide(world):
             self.kill()
 
+    def collide(self, world):
+        for o in world:
+            if self.rect.colliderect(o):
+                return True
 class Level(object):
     '''Read a map and create a level'''
     def __init__(self, open_level):
@@ -259,7 +262,7 @@ mask.fill((0,0,0,255))
 camera = Camera(screen, crashman.rect, level.get_size()[0], level.get_size()[1])
 all_sprite = level.all_sprite
 
-FPS = 30
+FPS = 300
 clock = pygame.time.Clock()
 mask = pygame.image.load('mask4.png')
 up = down = left = right = False
