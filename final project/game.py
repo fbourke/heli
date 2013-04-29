@@ -63,25 +63,30 @@ class Obstacle(pygame.sprite.Sprite):
 class Cat(pygame.sprite.Sprite):
     '''Class for create obstacles'''
     def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.scrolling = False
+        self.movy = 0
+        self.movx = 0
         self.x = x
         self.y = y
-        pygame.sprite.Sprite.__init__(self)
-        self.xspeed = 0
-        self.yspeed = 0
-        self.image = pygame.image.load("world/cat5.jpg").convert()
+        self.contact = False
+        self.jump = False
+        self.image = pygame.image.load('actions/idle_right.png').convert()
         self.rect = self.image.get_rect()
-        self.rect.topleft = [self.x, self.y]
-        # score = ("Score: %s" %points)
-        # score = font.render(score, False, (255,255,255))
-        # spos = score.get_rect()
-        # spos.topleft = (50,50)
-        # screen.blit(score, spos)
+        self.run_left = ["actions/left6.png","actions/left5.png",
+                         "actions/left4.png", "actions/left3.png",
+                         "actions/left2.png", "actions/left1.png"]                         # "actions/run_left006.png", "actions/run_left007.png"]
+        self.run_right = ["actions/right6.png","actions/right5.png",
+                         "actions/right4.png", "actions/right3.png",
+                         "actions/right2.png", "actions/right1.png"]
+                         # "actions/run_right006.png", "actions/run_right007.png"]
+
+        self.direction = "right"
+        self.rect.topleft = [x, y]
+        self.frame = 0
+
 
     def update(self, crashman):
-        target = (crashman.rect.x+camera.rect.x,crashman.rect.y+camera.rect.y)
-        # print(target)
-        angle = (target[1]-self.rect.y)/(sqrt(((self.rect.x-target[0])**2)+((target[1]-self.rect.y)**2)))
-        angle = asin(angle)
         # print(angle)
         for s in shots:
             # print(str(s.rect)+'shot')
@@ -90,6 +95,82 @@ class Cat(pygame.sprite.Sprite):
                 self.kill()
                 HUD.scored(hud)
         # self.rect = self.rect.move(self.xspeed,self.yspeed)
+        random = choice(['up','down','left','right'])
+        if random == 'up':
+            if self.contact:
+                self.jump = True
+                self.movy -= 20
+        if random == 'down':
+            if self.contact and self.direction == "right":
+                self.image = pygame.image.load('actions/downright.png').convert_alpha()
+            if self.contact and self.direction == "left":
+                self.image = pygame.image.load('actions/downleft.png').convert_alpha()
+
+        if random != 'down' and self.direction == "right":
+                self.image = pygame.image.load('actions/idleright.png').convert_alpha()
+
+        if random != 'down' and self.direction == "left":
+            self.image = pygame.image.load('actions/idleleft.png').convert_alpha()
+
+        if random == 'left':
+            self.direction = "left"
+            self.movx = -HORIZ_MOV_INCR
+            if self.contact:
+                self.frame += 1
+                self.image = pygame.image.load(self.run_left[self.frame]).convert_alpha()
+                if self.frame == 5: self.frame = 0
+            else:
+                self.image = self.image = pygame.image.load("actions/jumpleft.png").convert_alpha()
+
+        if random == 'right':
+            self.direction = "right"
+            self.movx = +HORIZ_MOV_INCR
+            if self.contact:
+                self.frame += 1
+                self.image = pygame.image.load(self.run_right[self.frame]).convert_alpha()
+                if self.frame == 5: self.frame = 0
+            else:
+                self.image = self.image = pygame.image.load("actions/jumpright.png").convert_alpha()
+
+        if random != 'left' and random != 'right':
+            self.movx = 0
+        self.rect.right += self.movx
+
+        self.collide(self.movx, 0, world)
+
+
+        if not self.contact:
+            self.movy += 0.3
+            if self.movy > 10:
+                self.movy = 10
+            self.rect.top += self.movy
+
+        if self.jump:
+            self.movy += 2
+            self.rect.top += self.movy
+            if self.contact == True:
+                self.jump = False
+
+        self.contact = False
+        self.collide(0, self.movy, world)
+
+
+
+    def collide(self, movx, movy, world):
+        self.contact = False
+        for o in world:
+            if self.rect.colliderect(o):
+                if movx > 0:
+                    self.rect.right = o.rect.left
+                if movx < 0:
+                    self.rect.left = o.rect.right
+                if movy > 0:
+                    self.rect.bottom = o.rect.top
+                    self.movy = 0
+                    self.contact = True
+                if movy < 0:
+                    self.rect.top = o.rect.bottom
+                    self.movy = 0
 
 
 class Crashman(pygame.sprite.Sprite):
@@ -102,7 +183,7 @@ class Crashman(pygame.sprite.Sprite):
         self.y = y
         self.contact = False
         self.jump = False
-        self.image = pygame.image.load('actions/idle_right.png').convert()
+        self.image = pygame.image.load('world/cat5.jpg').convert()
         self.rect = self.image.get_rect()
         self.run_left = ["actions/left6.png","actions/left5.png",
                          "actions/left4.png", "actions/left3.png",
@@ -351,9 +432,6 @@ while True:
             firing = True
         if firing:
             # print('FIRE!')
-            x = random.choice(range(0,1800))
-            y = random.choice(range(0, 800))
-            cats.add(Cat(x, y))
             shots.add(Shot((gx,gy),mpos,angle))
             # print('meow')
             # print('Gun X: %s' %gx)
@@ -361,7 +439,7 @@ while True:
             # print(mposx,mposy)
 
 
-        if event.type == KEYDOWN and event.key == K_SPACE:
+        if event.type == KEYDOWN and event.key == K_w:
             up = True
         if event.type == KEYDOWN and event.key == K_s:
             down = True
@@ -370,7 +448,7 @@ while True:
         if event.type == KEYDOWN and event.key == K_d:
             right = True
 
-        if event.type == KEYUP and event.key == K_SPACE:
+        if event.type == KEYUP and event.key == K_w:
             up = False
         if event.type == KEYUP and event.key == K_s:
             down = False
@@ -378,6 +456,13 @@ while True:
             left = False
         if event.type == KEYUP and event.key == K_d:
             right = False
+
+        if event.type == KEYDOWN and event.key == K_j:
+            x = random.choice(range(0,1800))
+            y = random.choice(range(0, 800))
+            h = Cat(x,y)
+            cats.add(h)
+            all_sprite.add(h)
         # dirty = all.draw(screen)
         # pygame.display.update(dirty)
 
@@ -389,16 +474,16 @@ while True:
     shots.draw(screen)
     cats.update(crashman)
     cats.draw(screen)
-    HUD.update(hud)
+
     # pygame.display.update()
 
     time_spent = tps(clock, FPS)
     camera.draw_sprites(screen, all_sprite)
     
-    # screen.blit(mask,(crashman.rect.x-camera.rect.x-1375, crashman.rect.y-camera.rect.y-965))
-    ## Cover the screen with the partly-translucent mask
-    # screen.blit(mask,(0,0))
-
+    #screen.blit(mask,(crashman.rect.x-camera.rect.x-1375, crashman.rect.y-camera.rect.y-965))
+    #Cover the screen with the partly-translucent mask
+    #screen.blit(mask,(0,0))
+    HUD.update(hud)
     crashman.update(up, down, left, right)
     all.update()
     camera.update()
