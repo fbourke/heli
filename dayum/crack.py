@@ -188,11 +188,14 @@ class Shot(pygame.sprite.Sprite):
         self.rect = self.rect.move(self.xspeed,self.yspeed)
         if self.rect.top <= 0 or self.collide(world):
             self.kill()
+            self.image = None
 
     def collide(self, world):
-        for o in world:
-            if self.rect.colliderect(o):
-                return True
+         for o in world:
+             if self.rect.colliderect(o):
+                 print("collided",o)
+                 return True
+
 class Level(object):
     '''Read a map and create a level'''
     def __init__(self, open_level):
@@ -262,7 +265,7 @@ mask.fill((0,0,0,255))
 camera = Camera(screen, crashman.rect, level.get_size()[0], level.get_size()[1])
 all_sprite = level.all_sprite
 
-FPS = 300
+FPS = 30
 clock = pygame.time.Clock()
 mask = pygame.image.load('mask4.png')
 up = down = left = right = False
@@ -306,7 +309,7 @@ while True:
             # print(mposx,mposy)
 
 
-        if event.type == KEYDOWN and event.key == K_SPACE:
+        if event.type == KEYDOWN and event.key == K_w:
             up = True
         if event.type == KEYDOWN and event.key == K_s:
             down = True
@@ -315,7 +318,7 @@ while True:
         if event.type == KEYDOWN and event.key == K_d:
             right = True
 
-        if event.type == KEYUP and event.key == K_SPACE:
+        if event.type == KEYUP and event.key == K_w:
             up = False
         if event.type == KEYUP and event.key == K_s:
             down = False
@@ -332,6 +335,7 @@ while True:
 
     shots.update()
     shots.draw(screen)
+    pygame.sprite.groupcollide(shots, world, True, False)
     # pygame.display.update()
 
     time_spent = tps(clock, FPS)

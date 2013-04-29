@@ -16,7 +16,6 @@ HORIZ_MOV_INCR = 10 #speed of movement
 global FPS
 global clock
 global time_spent
-global points
 
 health=100
 pygame.font.init()
@@ -89,7 +88,7 @@ class Cat(pygame.sprite.Sprite):
             # print(str(self.rect)+'cat')
             if s.rect.x in range(self.rect.x-15, self.rect.x+40) and s.rect.y in range(self.rect.y-15, self.rect.y+40):
                 self.kill()
-                HUD(points, health)
+                HUD.scored(hud)
         # self.rect = self.rect.move(self.xspeed,self.yspeed)
 
 
@@ -198,14 +197,18 @@ cat = pygame.image.load('world/cat5.jpg')
 
 class HUD(pygame.sprite.Sprite):
     '''class for player and collision'''
-    def __init__(self, points, health):
-        points +=10
-        score = ("Score: %s" %points)
-        score = font.render(score, False, (255,255,255))
-        spos = score.get_rect()
+    points = 0
+    health = 0
+    def __init__(self, health):
+        self.points = 0
+    def scored(self):
+        self.points +=10
+    def update(self):
+        self.score = ("Score: %s" %self.points)
+        self.score = font.render(self.score, False, (255,255,255))
+        spos = self.score.get_rect()
         spos.topleft = (50,50)
-        screen.blit(score, spos)
-
+        screen.blit(self.score, spos)
 class Shot(pygame.sprite.Sprite):
     #speed = -11
     images = []
@@ -315,6 +318,7 @@ gx=0
 gy=0
 shots = pygame.sprite.Group()
 cats = pygame.sprite.Group()
+hud = HUD(0)
 
 
 while True:
@@ -385,12 +389,13 @@ while True:
     shots.draw(screen)
     cats.update(crashman)
     cats.draw(screen)
+    HUD.update(hud)
     # pygame.display.update()
 
     time_spent = tps(clock, FPS)
     camera.draw_sprites(screen, all_sprite)
     
-    screen.blit(mask,(crashman.rect.x-camera.rect.x-1375, crashman.rect.y-camera.rect.y-965))
+    # screen.blit(mask,(crashman.rect.x-camera.rect.x-1375, crashman.rect.y-camera.rect.y-965))
     ## Cover the screen with the partly-translucent mask
     # screen.blit(mask,(0,0))
 
