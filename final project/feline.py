@@ -47,6 +47,17 @@ class Camera(object):
                 surf.blit(s.image, RelRect(s, self))
 obs = []
 
+# class Health(pygame.sprite.Sprite):
+#     '''Class for create obstacles'''
+#     def __init__(self, x, y):
+#         self.x = x
+#         self.y = y
+#         # obs.append((x,y))
+#         pygame.sprite.Sprite.__init__(self)
+#         self.image = pygame.image.load("world/obstacle.png").convert()
+#         self.rect = self.image.get_rect()
+#         self.rect.topleft = [self.x, self.y]
+
 class Obstacle(pygame.sprite.Sprite):
     '''Class for create obstacles'''
     def __init__(self, x, y):
@@ -76,10 +87,16 @@ class Cat(pygame.sprite.Sprite):
         # screen.blit(score, spos)
 
     def update(self, crashman):
-        target = (crashman.rect.x+camera.rect.x,crashman.rect.y+camera.rect.y)
+        c = 4
+        target = (crashman.rect.x, crashman.rect.y)
+        catz = (self.rect.x+camera.rect.x, self.rect.y+camera.rect.y)
+        yangle = (target[1]-catz[1])/(sqrt(((catz[0]-target[0])**2)+((target[1]-catz[1])**2)))
+        xangle = (catz[0]-target[0])/(sqrt(((catz[0]-target[0])**2)+((target[1]-catz[1])**2)))
         # print(target)
-        angle = (target[1]-self.rect.y)/(sqrt(((self.rect.x-target[0])**2)+((target[1]-self.rect.y)**2)))
-        angle = asin(angle)
+        # print(catz)
+        self.xspeed = xangle*c*-1
+        self.yspeed = yangle*c
+        self.rect = self.rect.move(self.xspeed,self.yspeed)
         # print(angle)
         for s in shots:
             # print(str(s.rect)+'shot')
@@ -217,6 +234,62 @@ class HUD(pygame.sprite.Sprite):
     def update(self):
         self.life = ("Health: %s" %self.health)
         self.score = ("Score: %s" %self.points)
+        if self.health == 0:
+            print('Game Over')
+            print("""
+        		       ...----....
+                         ..-:"''         ''"-..
+                      .-'                      '-.
+                    .'              .     .       '.
+                  .'   .          .    .      .    .''.
+                .'  .    .       .   .   .     .   . ..:.
+              .' .   . .  .       .   .   ..  .   . ....::.
+             ..   .   .      .  .    .     .  ..  . ....:IA.
+            .:  .   .    .    .  .  .    .. .  .. .. ....:IA.
+           .: .   .   ..   .    .     . . .. . ... ....:.:VHA.
+           '..  .  .. .   .       .  . .. . .. . .....:.::IHHB.
+          .:. .  . .  . .   .  .  . . . ...:.:... .......:HIHMM.
+         .:.... .   . ."::"'.. .   .  . .:.:.:II;,. .. ..:IHIMMA
+         ':.:..  ..::IHHHHHI::. . .  ...:.::::.,,,. . ....VIMMHM
+        .:::I. .AHHHHHHHHHHAI::. .:...,:IIHHHHHHMMMHHL:. . VMMMM
+       .:.:V.:IVHHHHHHHMHMHHH::..:" .:HIHHHHHHHHHHHHHMHHA. .VMMM.
+       :..V.:IVHHHHHMMHHHHHHHB... . .:VPHHMHHHMMHHHHHHHHHAI.:VMMI
+       ::V..:VIHHHHHHMMMHHHHHH. .   .I":IIMHHMMHHHHHHHHHHHAPI:WMM
+       ::". .:.HHHHHHHHMMHHHHHI.  . .:..I:MHMMHHHHHHHHHMHV:':H:WM
+       :: . :.::IIHHHHHHMMHHHHV  .ABA.:.:IMHMHMMMHMHHHHV:'. .IHWW
+       '.  ..:..:.:IHHHHHMMHV" .AVMHMA.:.'VHMMMMHHHHHV:' .  :IHWV
+        :.  .:...:".:.:TPP"   .AVMMHMMA.:. "VMMHHHP.:... .. :IVAI
+       .:.   '... .:"'   .   ..HMMMHMMMA::. ."VHHI:::....  .:IHW'
+       ...  .  . ..:IIPPIH: ..HMMMI.MMMV:I:.  .:ILLH:.. ...:I:IM
+     : .   .'"' .:.V". .. .  :HMMM:IMMMI::I. ..:HHIIPPHI::'.P:HM.
+     :.  .  .  .. ..:.. .    :AMMM IMMMM..:...:IV":T::I::.".:IHIMA
+     'V:.. .. . .. .  .  .   'VMMV..VMMV :....:V:.:..:....::IHHHMH
+       "IHH:.II:.. .:. .  . . . " :HB"" . . ..PI:.::.:::..:IHHMMV"
+        :IP""HHII:.  .  .    . . .'V:. . . ..:IH:.:.::IHIHHMMMMM"
+        :V:. VIMA:I..  .     .  . .. . .  .:.I:I:..:IHHHHMMHHMMM
+        :"VI:.VWMA::. .:      .   .. .:. ..:.I::.:IVHHHMMMHMMMMI
+        :."VIIHHMMA:.  .   .   .:  .:.. . .:.II:I:AMMMMMMHMMMMMI
+        :..VIHIHMMMI...::.,:.,:!"I:!"I!"I!"V:AI:VAMMMMMMHMMMMMM'
+        ':.:HIHIMHHA:"!!"I.:AXXXVVXXXXXXXA:."HPHIMMMMHHMHMMMMMV
+          V:H:I:MA:W'I :AXXXIXII:IIIISSSSSSXXA.I.VMMMHMHMMMMMM
+            'I::IVA ASSSSXSSSSBBSBMBSSSSSSBBMMMBS.VVMMHIMM'"'
+             I:: VPAIMSSSSSSSSSBSSSMMBSSSBBMMMMXXI:MMHIMMI
+            .I::. "H:XIIXBBMMMMMMMMMMMMMMMMMBXIXXMMPHIIMM'
+            :::I.  ':XSSXXIIIIXSSBMBSSXXXIIIXXSMMAMI:.IMM
+            :::I:.  .VSSSSSISISISSSBII:ISSSSBMMB:MI:..:MM
+            ::.I:.  ':"SSSSSSSISISSXIIXSSSSBMMB:AHI:..MMM.
+            ::.I:. . ..:"BBSSSSSSSSSSSSBBBMMMB:AHHI::.HMMI
+            :..::.  . ..::":BBBBBSSBBBMMMB:MMMMHHII::IHHMI
+            ':.I:... ....:IHHHHHMMMMMMMMMMMMMMMHHIIIIHMMV"
+              "V:. ..:...:.IHHHMMMMMMMMMMMMMMMMHHHMHHMHP'
+               ':. .:::.:.::III::IHHHHMMMMMHMHMMHHHHM"
+                 "::....::.:::..:..::IIIIIHHHHMMMHHMV"
+                   "::.::.. .. .  ...:::IIHHMMMMHMV"
+                     "V::... . .I::IHHMMV"'
+                       '"VHVHHHAHHHHMMV:"'                 """)
+            print(' ')
+            print('Your final score was %i' %self.points)
+            quit()
         self.score = font.render(self.score, False, (255,255,255))
         self.life = font.render(self.life, False, (255,0,0))
         hpos = self.life.get_rect()
@@ -271,6 +344,10 @@ class Level(object):
 
         for row in self.level1:
             for col in row:
+            	# if col == "H":
+             #        h = Health(x, y)
+             #        self.world.append(h)
+             #        self.all_sprite.add(self.world)
                 if col == "X":
                     obstacle = Obstacle(x, y)
                     self.world.append(obstacle)
@@ -335,16 +412,20 @@ gx=0
 gy=0
 shots = pygame.sprite.Group()
 cats = pygame.sprite.Group()
+# h = pygame.sprite.Group()
 hud = HUD(0)
-
-t=[]
+# h.add(Health(500,500))
+t=0
 
 while True:
     x = random.choice(range(0,1800))
     y = random.choice(range(0, 800))
     r = pygame.time.get_ticks()/1000
+    #print(r)
     if r%10 == 0:
-        cats.add(Cat(x,y))
+        t+=1
+        if t%10==0:
+    	    cats.add(Cat(x,y))
 
     firing=False
     # Shot stuff
@@ -410,6 +491,7 @@ while True:
     shots.draw(screen)
     cats.update(crashman)
     cats.draw(screen)
+    # h.draw(screen)
     # pygame.display.update()
 
     time_spent = tps(clock, FPS)
